@@ -233,6 +233,9 @@ var SOURCES = [
   {brand:"Fishwreck",color:"#1d4ed8",param:"fishwreck",base:"https://fishwreck.com.au/products/",verified:"Australian made · Hand-drawn marine artwork · UPF performance shirts"}
 ];
 var POPULAR = [];
+var EXCLUDE_PRODUCTS = [
+  "Island Day Tee"
+];
 var SHIRT_KW = ["shirt","tee","hoodie","tank","singlet","top","jersey","jumper","fishing"];
 var EXCLUDE_KW = ["golf","boardshort","board short","pant","short","leggin","trackpant","swimwear","wetsuit","glove","boot","hat","cap","beanie","trucker","snapback","bucket hat","straw hat","sunglass","bag","wallet","sticker","towel","stubby","sock","thong","belt","zinc","sunscreen"];
 var SIZE_SET = {xs:1,s:1,m:1,l:1,xl:1,"2xl":1,"3xl":1,"4xl":1,"5xl":1,xxl:1,"2":1,"4":1,"6":1,"8":1,"10":1,"12":1,"14":1,"16":1,"18":1,"20":1};
@@ -255,6 +258,8 @@ function parseProds(data,src){
     if(!keep){continue;}
     var skip=false;
     for(var e=0;e<EXCLUDE_KW.length;e++){if(txt.indexOf(EXCLUDE_KW[e])>-1){skip=true;break;}}
+    if(skip){continue;}
+    for(var ep=0;ep<EXCLUDE_PRODUCTS.length;ep++){if(p.title.toLowerCase().indexOf(EXCLUDE_PRODUCTS[ep].toLowerCase())>-1){skip=true;break;}}
     if(skip){continue;}
     var prices=[],sizes=[],colors=[],seenS={},seenC={};
     for(var j=0;j<p.variants.length;j++){
