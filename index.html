@@ -234,7 +234,7 @@ var SOURCES = [
 ];
 var POPULAR = [];
 var EXCLUDE_PRODUCTS = [
-  "Island Day Tee"
+  "10451692683556"
 ];
 var SHIRT_KW = ["shirt","tee","hoodie","tank","singlet","top","jersey","jumper","fishing"];
 var EXCLUDE_KW = ["golf","boardshort","board short","pant","short","leggin","trackpant","swimwear","wetsuit","glove","boot","hat","cap","beanie","trucker","snapback","bucket hat","straw hat","sunglass","bag","wallet","sticker","towel","stubby","sock","thong","belt","zinc","sunscreen"];
@@ -259,7 +259,7 @@ function parseProds(data,src){
     var skip=false;
     for(var e=0;e<EXCLUDE_KW.length;e++){if(txt.indexOf(EXCLUDE_KW[e])>-1){skip=true;break;}}
     if(skip){continue;}
-    for(var ep=0;ep<EXCLUDE_PRODUCTS.length;ep++){if(p.title.toLowerCase().indexOf(EXCLUDE_PRODUCTS[ep].toLowerCase())>-1){skip=true;break;}}
+    for(var ep=0;ep<EXCLUDE_PRODUCTS.length;ep++){if(p.id.toString()===EXCLUDE_PRODUCTS[ep]){skip=true;break;}}
     if(skip){continue;}
     var prices=[],sizes=[],colors=[],seenS={},seenC={};
     for(var j=0;j<p.variants.length;j++){
