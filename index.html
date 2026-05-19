@@ -16,6 +16,31 @@
 <meta name="twitter:title" content="Epic Fishing Shirts — Gear Up. Fish Hard.">
 <meta name="twitter:description" content="Australia's best fishing shirts from trusted brands — all in one place.">
 <meta name="twitter:image" content="https://epic-fishing-shirts.com/hero.jpg">
+
+<!-- LLM & AI search discoverability -->
+<meta name="description" content="Australia's best fishing shirts from trusted Australian brands — all in one place. Browse by style, price and vibe including loud and proud sublimation, artsy original designs, low key everyday wear, family and crew ranges, and seriously sun safe UPF 50+ shirts.">
+<link rel="alternate" type="text/plain" title="LLMs.txt" href="/llms.txt">
+
+<!-- Schema.org: WebSite + SearchAction for LLM parsability -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Epic Fishing Shirts",
+  "url": "https://epic-fishing-shirts.com",
+  "description": "Curated Australian fishing shirts from trusted AU and NZ brands. Browse sublimation jerseys, hand-drawn graphic tees, hoodies, tanks and UPF 50+ long sleeves from One Drop Cartel, Fishwreck, The Mad Hueys, Anchorline Australia, Tide Apparel, Flat Out Fishing Shirts, The Macintosh Forster, Youngbloods, Salty Sea Co, Dusty Wattle, and Desolve Supply Co.",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://epic-fishing-shirts.com/?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  },
+  "about": {
+    "@type": "Thing",
+    "name": "Fishing shirts Australia",
+    "description": "Performance fishing shirts with UPF 50+ protection, sublimation prints, hand-drawn artwork, and everyday crossover styles from Australian and New Zealand independent brands."
+  }
+}
+</script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJ77F97KM1"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-KJ77F97KM1',{'page_title':'Epic Fishing Shirts','page_location':'https://epic-fishing-shirts.com'});</script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -227,9 +252,11 @@ footer{text-align:center;padding:24px;font-size:11px;color:#999;border-top:1px s
 </div>
 <div class="hero-dropdown" id="dropVibe">
   <div class="hero-dropdown-item selected" data-val="">any vibe <span class="check">✓</span></div>
-  <div class="hero-dropdown-item" data-val="upf">UPF 50+ only <span class="check">✓</span></div>
-  <div class="hero-dropdown-item" data-val="kids">kids <span class="check">✓</span></div>
-  <div class="hero-dropdown-item" data-val="ladies">ladies <span class="check">✓</span></div>
+  <div class="hero-dropdown-item" data-val="loud">loud and proud <span class="check">✓</span></div>
+  <div class="hero-dropdown-item" data-val="artsy">artsy and original <span class="check">✓</span></div>
+  <div class="hero-dropdown-item" data-val="lowkey">low key cool <span class="check">✓</span></div>
+  <div class="hero-dropdown-item" data-val="crew">for the whole crew <span class="check">✓</span></div>
+  <div class="hero-dropdown-item" data-val="sunsafe">seriously sun safe <span class="check">✓</span></div>
 </div>
 
 <div class="masonry-wrap" id="masonryWrap"></div>
@@ -304,7 +331,10 @@ var SOURCES = [
   {brand:"Tide Apparel",color:"#0891b2",param:"tideapparel",base:"https://tideapparel.com/products/",verified:"Pure fishing brand · Made in Australia · Based in QLD"},
   {brand:"Flat Out Fishing Shirts",color:"#b45309",param:"flatout",base:"https://flatoutfishingshirts.com/products/",verified:"Adelaide-based · UPF 50+ hooded shirts"},
   {brand:"The Macintosh Forster",color:"#0e7490",param:"macintosh",base:"https://the-macintosh-forster.myshopify.com/products/",verified:"Forster NSW · Unique coastal designs"},
-  {brand:"Fishwreck",color:"#1d4ed8",param:"fishwreck",base:"https://fishwreck.com.au/products/",verified:"Australian made · Hand-drawn marine artwork"}
+  {brand:"Fishwreck",color:"#1d4ed8",param:"fishwreck",base:"https://fishwreck.com.au/products/",verified:"Australian made · Hand-drawn marine artwork"},
+  {brand:"Salty Sea Co",color:"#0369a1",param:"saltysea",base:"https://www.saltysea.com.au/products/",verified:"Australian brothers · Original designs · UPF 50+"},
+  {brand:"Dusty Wattle",color:"#b45309",param:"dustywattle",base:"https://dustywattle.com/products/",verified:"Rural QLD · Female-owned · Hand-drawn prints · XXS–7XL"},
+  {brand:"Desolve Supply Co",color:"#4d7c0f",param:"desolve",base:"https://desolvesupplyco.com.au/products/",verified:"NZ-designed · AU-distributed · Original fishing apparel"}
 ];
 var EXCLUDE_PRODUCTS = ["10451692683556"];
 var SHIRT_KW = ["shirt","tee","hoodie","tank","singlet","top","jersey","jumper","fishing"];
@@ -319,6 +349,32 @@ var qvImgs = [], qvImgIdx = 0, qvZoomed = false, qvProduct = null;
 
 function genderOf(t){var s=t.toLowerCase();if(s.match(/kids|youth|junior|children|groms/)){return"Kids";}if(s.match(/ladies|womens|female/)){return"Ladies";}if(s.match(/\bmens\b|male/)){return"Mens";}return"Adult";}
 function catOf(t){var s=t.toLowerCase();if(s.match(/hoodie|hood|jumper/)){return"Hoodie";}if(s.match(/tank|singlet/)){return"Tank";}if(s.match(/t-shirt|cotton t|\btee\b/)){return"T-Shirt";}return"Long Sleeve";}
+
+// Vibe classifier — assigns one of 5 curated vibes based on brand, title, tags, and description signals
+// Vibes: "loud" | "artsy" | "lowkey" | "crew" | "sunsafe" — returns ARRAY, products can have multiple
+var CREW_BRANDS=["Salty Sea Co","Dusty Wattle","Flat Out Fishing Shirts","Anchorline Australia"];
+var ARTSY_BRANDS=["Fishwreck","The Macintosh Forster","Dusty Wattle"];
+var LOUD_BRANDS=["One Drop Cartel","Tide Apparel","Salty Sea Co"];
+var LOWKEY_BRANDS=["The Mad Hueys","Youngbloods","Desolve Supply Co"];
+function vibeOf(title,brand,tagStr,bodyHtml){
+  var txt=(title+" "+tagStr+" "+(bodyHtml||"")).toLowerCase();
+  var vibes=[];
+  // Sun safe — UPF signal, independent of style
+  if(txt.match(/upf\s*50|sun.?safe|sun.?protect|uv.?protect/)){vibes.push("sunsafe");}
+  // Loud and proud — sublimation, photorealistic, all-over print, tournament-ready
+  if(txt.match(/sublim|all.?over.?print|photorealistic|tournament|full.?print|performance.?jersey|fishing.?jersey/)){vibes.push("loud");}
+  else if(LOUD_BRANDS.indexOf(brand)>-1&&txt.match(/jersey|performance|sublim/)){vibes.push("loud");}
+  // Artsy and original — hand-drawn, illustrated, linework
+  if(txt.match(/hand.?drawn|illustrat|linework|original.?design|artwork|hand.?painted|etching|woodcut/)){vibes.push("artsy");}
+  else if(ARTSY_BRANDS.indexOf(brand)>-1&&vibes.indexOf("loud")===-1){vibes.push("artsy");}
+  // For the whole crew — family/group/team ranges
+  if(txt.match(/kids|youth|junior|groms|family|crew|matching|group|bucks|team/)){vibes.push("crew");}
+  else if(CREW_BRANDS.indexOf(brand)>-1){vibes.push("crew");}
+  // Low key cool — minimal, lifestyle, everyday crossover
+  if(txt.match(/minimal|subtle|lifestyle|everyday|casual|classic|low.?key|relaxed/)){vibes.push("lowkey");}
+  else if(LOWKEY_BRANDS.indexOf(brand)>-1&&vibes.length===0){vibes.push("lowkey");}
+  return vibes;}
+
 
 function parseProds(data,src){
   var out=[];
@@ -349,7 +405,7 @@ function parseProds(data,src){
     var avail=false;for(var vi=0;vi<p.variants.length;vi++){if(p.variants[vi].available){avail=true;break;}}
     if(!avail){continue;}
     var imgs=p.images?p.images.map(function(im){return im.src;}):[];
-    out.push({id:p.id.toString(),brand:src.brand,color:src.color,name:p.title,gender:genderOf(p.title+" "+tagStr),cat:catOf(p.title+" "+(p.product_type||"")),price:prices.length?Math.min.apply(null,prices):null,upf:(p.title+(p.body_html||"")+tagStr).toLowerCase().indexOf("upf")>-1,colors:colors,sizes:sizes,url:src.base+p.handle,img:imgs[0]||null,imgs:imgs,available:true});
+    out.push({id:p.id.toString(),brand:src.brand,color:src.color,name:p.title,gender:genderOf(p.title+" "+tagStr),cat:catOf(p.title+" "+(p.product_type||"")),vibes:vibeOf(p.title,src.brand,tagStr,p.body_html||""),price:prices.length?Math.min.apply(null,prices):null,upf:(p.title+(p.body_html||"")+tagStr).toLowerCase().indexOf("upf")>-1,colors:colors,sizes:sizes,url:src.base+p.handle,img:imgs[0]||null,imgs:imgs,available:true});
   }
   return out;
 }
@@ -358,9 +414,7 @@ function getFiltered(){
   var p=allProducts.slice();
   if(fStyle){p=p.filter(function(x){return x.cat===fStyle;});}
   if(fPrice){var max=parseFloat(fPrice);p=p.filter(function(x){return x.price&&x.price<=max;});}
-  if(fVibe==="upf"){p=p.filter(function(x){return x.upf;});}
-  else if(fVibe==="kids"){p=p.filter(function(x){return x.gender==="Kids";});}
-  else if(fVibe==="ladies"){p=p.filter(function(x){return x.gender==="Ladies";});}
+  if(fVibe){p=p.filter(function(x){return x.vibes.indexOf(fVibe)>-1;});}
   if(sbGenders.length){p=p.filter(function(x){return sbGenders.indexOf(x.gender)>-1;});}
   if(sbBrands.length){p=p.filter(function(x){return sbBrands.indexOf(x.brand)>-1;});}
   if(sbCats.length){p=p.filter(function(x){return sbCats.indexOf(x.cat)>-1;});}
