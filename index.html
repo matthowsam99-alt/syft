@@ -297,6 +297,10 @@ footer{text-align:center;padding:24px;font-size:11px;color:#999;border-top:1px s
       <div class="sidebar-brands" id="sbBrandList"></div>
     </div>
     <div class="sidebar-section">
+      <div class="sidebar-label">Size</div>
+      <div class="sidebar-chips" id="sbSizeChips"></div>
+    </div>
+    <div class="sidebar-section">
       <div class="sidebar-label">UPF Protection</div>
       <div class="sidebar-chips">
         <button class="sidebar-chip" id="sbUpf" data-active="0">UPF 50+ only</button>
@@ -344,7 +348,7 @@ var POPULAR = [];
 
 var allProducts = [], shortlist = [];
 var fStyle = "", fPrice = "", fVibe = "";
-var sbGenders = [], sbBrands = [], sbCats = [], sbUpf = false;
+var sbGenders = [], sbBrands = [], sbCats = [], sbSizes = [], sbUpf = false;
 var qvImgs = [], qvImgIdx = 0, qvZoomed = false, qvProduct = null;
 
 function genderOf(t){var s=t.toLowerCase();if(s.match(/kids|youth|junior|children|groms/)){return"Kids";}if(s.match(/ladies|womens|female/)){return"Ladies";}if(s.match(/\bmens\b|male/)){return"Mens";}return"Adult";}
@@ -418,7 +422,7 @@ function getFiltered(){
   if(sbGenders.length){p=p.filter(function(x){return sbGenders.indexOf(x.gender)>-1;});}
   if(sbBrands.length){p=p.filter(function(x){return sbBrands.indexOf(x.brand)>-1;});}
   if(sbCats.length){p=p.filter(function(x){return sbCats.indexOf(x.cat)>-1;});}
-  if(sbUpf){p=p.filter(function(x){return x.upf;});}
+  if(sbSizes.length){p=p.filter(function(x){return sbSizes.some(function(sz){return x.sizes.indexOf(sz)>-1;});});}
   return p;
 }
 
@@ -474,6 +478,7 @@ function renderAppliedTags(){
   var tags=[];
   if(sbGenders.length){sbGenders.forEach(function(g){tags.push({label:g,clear:function(){var i=sbGenders.indexOf(g);if(i>-1){sbGenders.splice(i,1);}renderGrid();renderAppliedTags();renderSidebar();}});});}
   if(sbBrands.length){sbBrands.forEach(function(b){tags.push({label:b,clear:function(){var i=sbBrands.indexOf(b);if(i>-1){sbBrands.splice(i,1);}renderGrid();renderAppliedTags();renderSidebar();}});});}
+  if(sbSizes.length){sbSizes.forEach(function(sz){tags.push({label:"Size "+sz,clear:function(){var i=sbSizes.indexOf(sz);if(i>-1){sbSizes.splice(i,1);}renderGrid();renderAppliedTags();renderSidebar();}});});}
   if(sbUpf){tags.push({label:"UPF 50+",clear:function(){sbUpf=false;var btn=document.getElementById("sbUpf");if(btn){btn.classList.remove("active");}renderGrid();renderAppliedTags();}});}
   tags.forEach(function(t){
     var tag=document.createElement("span");tag.className="applied-tag";
@@ -588,6 +593,14 @@ function renderSidebar(){
   if(gc){gc.innerHTML="";genders.forEach(function(g){var b=document.createElement("button");b.className="sidebar-chip"+(sbGenders.indexOf(g)>-1?" active":"");b.textContent=g;b.addEventListener("click",function(){var i=sbGenders.indexOf(g);if(i>-1){sbGenders.splice(i,1);}else{sbGenders.push(g);}this.classList.toggle("active");updateSbCount();});gc.appendChild(b);});}
   var bl=document.getElementById("sbBrandList");
   if(bl){bl.innerHTML="";SOURCES.forEach(function(s){var d=document.createElement("div");d.className="sidebar-brand"+(sbBrands.indexOf(s.brand)>-1?" active":"");d.innerHTML=s.brand+'<span class="check">✓</span>';d.addEventListener("click",function(){var i=sbBrands.indexOf(s.brand);if(i>-1){sbBrands.splice(i,1);}else{sbBrands.push(s.brand);}this.classList.toggle("active");updateSbCount();});bl.appendChild(d);});}
+  var sc=document.getElementById("sbSizeChips");
+  if(sc){
+    var sizeOrder=["XS","S","M","L","XL","2XL","3XL","4XL","5XL","XXL","2","4","6","8","10","12","14","16","18","20"];
+    var seen={};var allSizes=[];
+    for(var i=0;i<allProducts.length;i++){for(var j=0;j<allProducts[i].sizes.length;j++){var sz=allProducts[i].sizes[j];if(!seen[sz]){seen[sz]=1;allSizes.push(sz);}}}
+    allSizes.sort(function(a,b){var ai=sizeOrder.indexOf(a);var bi=sizeOrder.indexOf(b);if(ai===-1&&bi===-1){return a.localeCompare(b);}if(ai===-1){return 1;}if(bi===-1){return -1;}return ai-bi;});
+    sc.innerHTML="";allSizes.forEach(function(sz){var b=document.createElement("button");b.className="sidebar-chip"+(sbSizes.indexOf(sz)>-1?" active":"");b.textContent=sz;b.addEventListener("click",function(){var i=sbSizes.indexOf(sz);if(i>-1){sbSizes.splice(i,1);}else{sbSizes.push(sz);}this.classList.toggle("active");updateSbCount();});sc.appendChild(b);});
+  }
   updateSbCount();
 }
 function updateSbCount(){var cnt=document.getElementById("sbCount");if(cnt){cnt.textContent=getFiltered().length;}}
