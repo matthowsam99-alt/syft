@@ -432,8 +432,10 @@ function getFiltered(){
 function isLiked(id){for(var i=0;i<shortlist.length;i++){if(shortlist[i].id===id){return true;}}return false;}
 function toggleLike(prod,e){
   if(e){e.stopPropagation();}
-  if(isLiked(prod.id)){var next=[];for(var i=0;i<shortlist.length;i++){if(shortlist[i].id!==prod.id){next.push(shortlist[i]);}}shortlist=next;}
+  var wasLiked=isLiked(prod.id);
+  if(wasLiked){var next=[];for(var i=0;i<shortlist.length;i++){if(shortlist[i].id!==prod.id){next.push(shortlist[i]);}}shortlist=next;}
   else{shortlist.push(prod);}
+  track(wasLiked?"unlike":"like",{item_name:prod.name,item_brand:prod.brand,item_vibes:(prod.vibes||[]).join(",")||"none"});
   var btn=document.getElementById("shortlistBtn");var cnt=document.getElementById("slCount");
   if(btn){btn.className="shortlist-btn"+(shortlist.length?" visible":"");if(shortlist.length){btn.classList.add("has-items");}}
   if(cnt){cnt.textContent=shortlist.length;}
@@ -522,7 +524,7 @@ function openQv(prod){
   renderQvRight(prod);
   document.getElementById("qvOverlay").classList.add("open");
   document.body.style.overflow="hidden";
-  track("lightbox_open",{item_name:prod.name,item_brand:prod.brand});
+  track("lightbox_open",{item_name:prod.name,item_brand:prod.brand,item_vibes:(prod.vibes||[]).join(",")||"none",item_category:prod.cat,item_gender:prod.gender});
 }
 function closeQv(){document.getElementById("qvOverlay").classList.remove("open");document.body.style.overflow="";qvZoomed=false;qvProduct=null;}
 function qvGo(dir){qvImgIdx=(qvImgIdx+dir+qvImgs.length)%qvImgs.length;qvZoomed=false;document.getElementById("qvLeft").classList.remove("zoomed");renderQvImg();}
@@ -548,7 +550,7 @@ function renderQvRight(p){
   var actions=document.createElement("div");actions.className="qv-actions";
   var buy=document.createElement("a");buy.href=p.url;buy.target="_blank";buy.className="qv-buy";
   buy.innerHTML='View on Store <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin-left:6px;vertical-align:middle"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
-  buy.addEventListener("click",function(){track("buy_click",{item_name:p.name,item_brand:p.brand,price:p.price,currency:"AUD"});});
+  buy.addEventListener("click",function(){track("buy_click",{item_name:p.name,item_brand:p.brand,price:p.price,currency:"AUD",item_vibes:(p.vibes||[]).join(",")||"none",item_category:p.cat,item_gender:p.gender,destination_url:p.url});});
   var hb=document.createElement("button");hb.className="qv-heart-btn"+(isLiked(p.id)?" liked":"");
   hb.innerHTML='<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>';
   (function(prod){hb.addEventListener("click",function(){toggleLike(prod,null);});})(p);
@@ -584,6 +586,7 @@ function setupHeroWord(wordId,dropId,filterKey){
       else if(filterKey==="price"){fPrice=val;word.textContent=val?label:"at any price";}
       else if(filterKey==="vibe"){fVibe=val;word.textContent=val?label:"any vibe";}
       drop.classList.remove("open");
+      track("filter_change",{filter_type:filterKey,filter_value:val||"any",filter_label:label,results_count:getFiltered().length});
       renderGrid();
     });
   });
@@ -619,7 +622,24 @@ function openShortlist(){
 }
 function closeShortlist(){document.getElementById("slOverlay").classList.remove("open");document.body.style.overflow="";}
 
-function track(event,params){if(typeof gtag!=="undefined"){gtag("event",event,params);}}
+function getFilterContext(){
+  return {
+    active_style: fStyle || "any",
+    active_price: fPrice || "any",
+    active_vibe: fVibe || "any",
+    has_vibe: fVibe ? "yes" : "no",
+    has_any_filter: (fStyle||fPrice||fVibe||sbGenders.length||sbBrands.length||sbCats.length||sbSizes.length||sbUpf) ? "yes" : "no",
+    sidebar_brands: sbBrands.join(",") || "none",
+    sidebar_genders: sbGenders.join(",") || "none",
+    sidebar_sizes: sbSizes.join(",") || "none",
+    sidebar_upf: sbUpf ? "yes" : "no"
+  };
+}
+function track(event,params){
+  if(typeof gtag==="undefined"){return;}
+  var enriched=Object.assign({},getFilterContext(),params||{});
+  gtag("event",event,enriched);
+}
 
 function loadSource(src,onDone){
   fetch(PROXY+"?site="+src.param)
@@ -691,6 +711,27 @@ document.addEventListener("DOMContentLoaded",function(){
     if(document.getElementById("sidebar").classList.contains("open")&&e.key==="Escape"){closeSidebar();}
   });
   loadAll();
+});
+
+// Scroll depth tracking
+var scrollMarks={25:false,50:false,75:false,100:false};
+window.addEventListener("scroll",function(){
+  var pct=Math.round((window.scrollY+window.innerHeight)/document.body.scrollHeight*100);
+  [25,50,75,100].forEach(function(m){
+    if(!scrollMarks[m]&&pct>=m){scrollMarks[m]=true;track("scroll_depth",{depth_pct:m});}
+  });
+});
+
+// Time on site tracking
+var sessionStart=Date.now();
+window.addEventListener("beforeunload",function(){
+  var secs=Math.round((Date.now()-sessionStart)/1000);
+  if(secs>3){track("session_duration",{seconds:secs});}
+});
+
+// Track first-time site load with vibe filter usage in URL
+window.addEventListener("DOMContentLoaded",function(){
+  track("page_view_enhanced",{referrer:document.referrer||"direct"});
 });
 </script>
 </body>
